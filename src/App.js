@@ -5,6 +5,22 @@ import MicRecorder from "mic-recorder-to-mp3"
 import { useEffect, useState, useRef } from "react"
 import axios from "axios"
 
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const YourAPIKey = process.env.REACT_APP_API_KEY;
+
+const assembly = axios.create({
+  baseURL: "https://api.assemblyai.com/v2",
+  headers: {
+    authorization: YourAPIKey,
+    "content-type": "application/json",
+    "transfer-encoding": "chunked",
+  },
+})
+
+
 function App() {
   const recorder = useRef(null) //Recorder
   const audioPlayer = useRef(null) //Ref for the HTML Audio Tag
