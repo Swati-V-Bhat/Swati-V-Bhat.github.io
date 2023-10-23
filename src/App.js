@@ -18,7 +18,7 @@ const assembly = axios.create({
   headers: {
     authorization: YourAPIKey,
     "content-type": "application/json",
-    "transfer-encoding": "chunked",
+    //"transfer-encoding": "chunked",
   },
 })
 
@@ -77,7 +77,18 @@ function App() {
 
     // Submit the Upload URL to AssemblyAI and retrieve the Transcript ID
     const submitTranscriptionHandler = () => {
-      
+      if (selectedFile) {
+        // Upload the selected file instead of the audioFile state
+        assembly
+          .post("/upload", selectedFile)
+          .then((res) => {
+            setUploadURL(res.data.upload_url);
+            setTranscriptID(res.data.id);
+            checkStatusHandler();
+          })
+          .catch((err) => console.error(err));
+      } else {
+
       assembly
         .post("/transcript", {
           audio_url: uploadURL,
@@ -88,6 +99,7 @@ function App() {
         })
         .catch((err) => console.error(err))
     }
+  }
     // Check the status of the Transcript and retrieve the Transcript Data
   const checkStatusHandler = async () => {
     setIsLoading(true)
@@ -103,7 +115,7 @@ function App() {
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setSelectedFile(file);
+      setAudioFile(file);
     }
   };
   
