@@ -4,13 +4,20 @@ import logo from './logo.svg';
 import MicRecorder from "mic-recorder-to-mp3"
 import { useEffect, useState, useRef } from "react"
 import axios from "axios"
+//import { BartTokenizer, BartForConditionalGeneration } from 'transformers';
+//import JsonView from 'react18-json-view'
+//import 'react18-json-view/src/style.css'
+//import Summarizer from "./Summarizer";
 
 
-import dotenv from "dotenv";
+//<JsonView src={my_json_object} />
 
-dotenv.config();
+//import dotenv from "dotenv";
+
+//dotenv.config();
 
 const YourAPIKey = process.env.REACT_APP_API_KEY;
+const apiKey = process.env.REACT_APP_HUGGING_FACE_API_KEY;
 
 //Set AssemblyAI Axios Header
 const assembly = axios.create({
@@ -65,6 +72,8 @@ function App() {
   const [transcriptData, setTranscriptData] = useState("")
   const [transcript, setTranscript] = useState("")
   const [selectedFile, setSelectedFile] = useState(null);
+  const [summary, setSummary] = useState('');
+
 
   useEffect(() => {
     if (audioFile) {
@@ -134,6 +143,48 @@ function App() {
       return () => clearInterval(interval)
     },)
     
+    /* const summarizeText = async (text) => {
+      const tokenizer = new BartTokenizer();
+      const model = new BartForConditionalGeneration.from_pretrained('facebook/bart-large');
+    
+      const inputs = tokenizer({text}, {return_tensors: 'pt'});
+      const outputs = await model.generate(inputs, {max_length: 512, num_beams: 5});
+    
+      const summary = tokenizer.decode(outputs[0]);
+      return summary;
+    }; 
+    const summarizer = new Summarizer();
+
+  const summarize = async (text) => {
+    const summary = await summarizer(transcriptData.text);
+   setTranscript(summary);*/
+
+  const summarizeText = async () => {
+    try {
+      
+      const response = await axios.post(
+        "https://api-inference.huggingface.co/models/facebook/bart-large-cnn",
+        
+        
+        {
+          inputs: transcript.text,
+          options: {
+            task: "summarization",
+          },
+        },
+        {
+          headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data[0].generated_text;
+    } catch (error) {
+      console.error("Error summarizing text:", error);
+      return "Error summarizing text.";
+    }
+  };
 
   return (<div className="App">
     
@@ -142,13 +193,17 @@ function App() {
   </header>
 
   <body>
-  <audio ref={audioPlayer} src={blobURL} controls='controls' />
+  
       <div>
        {/*   <button disabled={isRecording} onClick={startRecording}>
           START
         </button> */}
-        <input type="file" accept="audio/*" onChange={handleFileChange} />
-
+        <div>
+        <input class = "btn-space" type="file" accept="audio/*" onChange={handleFileChange} />
+        </div>
+        
+        <audio ref={audioPlayer} src={blobURL} controls='controls' />
+        <div>
         <button onClick={startRecording}>
           START
         </button>
@@ -156,18 +211,27 @@ function App() {
           STOP
         </button>
         <button onClick={submitTranscriptionHandler}>SUBMIT</button>
-        
-      </div>
+        </div>
+        <div>
+      
       {transcriptData.status === "completed" ? (
-        <p>{transcript}</p>
+        <textarea class= "text-area" value={transcript} />
       ) : (
         <p>{transcriptData.status}</p>
       )}
+      </div>
+      <button onClick={summarizeText}>Summarize</button>
+      {summary.status === "completed" ? (
+         <textarea class="text-area" value={summary} />
+      ) : (
+        <p>{summary.status}</p>
+      )}
+      </div>
 </body>
 </div>
   
     
   );
-  }
-
+  
+      }
 export default App;
