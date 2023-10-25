@@ -7,4 +7,4 @@ Demo Video : https://youtu.be/Ng7rt4XhIK0
 
 Resources Used:
 AssemblyAI API (https://www.assemblyai.com/docs),
-Huggingface Model (https://huggingface.co/facebook/bart-large-cnn),
+Huggingface Model (https://huggingface.co/facebook/bart-large-cnn)
